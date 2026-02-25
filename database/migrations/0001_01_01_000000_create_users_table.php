@@ -14,23 +14,26 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
 
-            // basic info
+            // Basic Info
             $table->string('name');
             $table->string('email')->unique();
-
-            // social login
-            $table->string('google_id')->nullable()->unique(); 
+            
+            // Social Login
+            $table->string('google_id')->nullable()->unique();
             $table->string('provider')->nullable();
 
-            // user metadata
-            $table->string('avatar')->nullable(); 
-
-            // authentication
+            // User Metadata
+            $table->string('avatar')->nullable();
+            
+            // Kolom Tambahan untuk OTP
+            $table->string('otp_code')->nullable();
+            $table->timestamp('otp_expires_at')->nullable();
+            
+            // Authentication
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable(); 
             $table->rememberToken();
             $table->timestamps();
-
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
