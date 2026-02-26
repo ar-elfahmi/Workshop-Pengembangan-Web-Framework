@@ -8,8 +8,11 @@ use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
-use Symfony\Component\HttpFoundation\Session\Session;
+use Illuminate\Support\Facades\Session; // Wajib
+use Illuminate\Support\Facades\Mail; // Wajib untuk mengirim email
+use Carbon\Carbon; // Wajib untuk waktu kadaluarsa
+use Illuminate\Http\Request;
+use App\Mail\OtpMail; // Import OtpMail
 
 class GoogleAuthController extends Controller
 {
@@ -18,53 +21,137 @@ class GoogleAuthController extends Controller
         return Socialite::driver('google')->redirect();
     }
 
-    public function handleGoogleCallback()
+    public function callback()
     {
         try {
-            // 1. Dapatkan data user dari Google
             $googleUser = Socialite::driver('google')->user();
+            // dd($googleUser);
 
-            // 2. Cari user di database berdasarkan email, atau buat baru jika belum ada
-            $user = User::updateOrCreate(
-                ['email' => $googleUser->getEmail()],
-                [
-                    'name' => $googleUser->getName(),
-                    'google_id' => $googleUser->getId(),
-                    'provider' => 'google',
-                    'avatar' => $googleUser->getAvatar(),
-                ]
-            );
+            if (empty($googleUser->email)) {
+                return redirect()->route('login')->withErrors('No email returned from Google.');
+            }
 
-            // ==========================================
-            // START: LOGIKA PENCEGATAN & PEMBUATAN OTP
-            // ==========================================
+            // 1. Sinkronisasi Data User
+            $user = User::where('google_id', $googleUser->id)
+                ->orWhere('email', $googleUser->email)
+                ->first();
 
-            // 3. Buat 6 digit kode OTP acak
+            if (!$user) {
+                $user = User::create([
+                    'name'      => $googleUser->name,
+                    'email'     => $googleUser->email,
+                    'google_id' => $googleUser->id,
+                    'provider'  => 'google',
+                    'avatar'    => $googleUser->avatar,
+                    'password'  => bcrypt(Str::random(24)),
+                ]);
+            } else if (!$user->google_id) {
+                $user->update([
+                    'google_id' => $googleUser->id,
+                    'provider'  => 'google',
+                ]);
+            }
+
+            // 2. LOGIKA OTP LINIER (Simpan di Session)
             $otpCode = rand(100000, 999999);
+            $expiresAt = Carbon::now()->addMinutes(5); // OTP berlaku 5 menit
 
-            // 4. Tentukan batas waktu kadaluarsa (misalnya 5 menit dari sekarang)
-            $otpExpiresAt = Carbon::now()->addMinutes(5);
+            // Simpan data ke session
+            Session::put('temp_user_id', $user->id);
+            Session::put('otp_code', $otpCode);
+            Session::put('otp_expires_at', $expiresAt);
 
-            // 5. Simpan kode dan batas waktu ke database user tersebut
-            $user->otp_code = $otpCode;
-            $user->otp_expires_at = $otpExpiresAt;
-            $user->save();
+            // Kirim email OTP
+            try {
+                Mail::to($user->email)->send(new OtpMail($user, $otpCode));
+                Log::info('OTP email sent to: ' . $user->email);
+            } catch (\Exception $e) {
+                Log::error('Failed to send OTP email: ' . $e->getMessage());
+                // Tetap lanjutkan meskipun email gagal, tapi tampilkan pesan peringatan
+                Session::flash('warning', 'Gagal mengirim email OTP. Silakan coba kembali atau gunakan resend OTP.');
+            }
 
-            // 6. SIMPAN ID USER KE SESSION (Sangat Krusial!)
-            // Karena kita BELUM menjalankan Auth::login(), kita harus menitipkan ID user 
-            // ke Session agar halaman verifikasi OTP tahu siapa yang sedang mencoba login.
-            Session::put('otp_user_id', $user->id);
-
-            // 7. (Hanya untuk tahap Testing/Eksperimen) 
-            // Titipkan juga OTP ke session agar bisa kita cetak di layar tanpa perlu kirim email dulu
+            // [OPSIONAL] Munculkan di layar untuk testing
             Session::flash('testing_otp', $otpCode);
 
-            // 8. Redirect ke halaman form OTP (Route ini akan kita buat setelah ini)
-            return redirect()->route('otp.verify');
-
+            // 3. REDIRECT KE HALAMAN OTP (Bukan Login)
+            return redirect()->route('otp.form');
         } catch (\Exception $e) {
-            // Jika batal login atau ada error, kembalikan ke halaman login
-            return redirect('/login')->with('error', 'Login Google gagal: ' . $e->getMessage());
+            Log::error('Google OAuth Error: ' . $e->getMessage());
+            return redirect()->route('login')->withErrors('Authentication failed.');
+        }
+    }
+
+    // Menampilkan form verifikasi
+    public function showOtpForm()
+    {
+        if (!Session::has('temp_user_id')) {
+            return redirect()->route('login')->withErrors('Silakan login via Google terlebih dahulu.');
+        }
+        return view('auth.otp');
+    }
+
+    // Memproses angka OTP
+    public function verifyOtp(Request $request)
+    {
+        $request->validate(['otp_code' => 'required|numeric']);
+
+        $sessionOtp = Session::get('otp_code');
+        $expiresAt = Session::get('otp_expires_at');
+        $tempUserId = Session::get('temp_user_id');
+
+        // Cek apakah session data ada
+        if (!$sessionOtp || !$expiresAt || !$tempUserId) {
+            return back()->withErrors(['otp_code' => 'Sesi login kadaluarsa. Silakan login kembali.']);
+        }
+
+        // Cek apakah kode cocok dan belum kadaluarsa
+        if ($request->otp_code == $sessionOtp && Carbon::now()->isBefore($expiresAt)) {
+            $user = User::find($tempUserId);
+
+            if ($user) {
+                // Eksekusi Login Resmi
+                Auth::login($user);
+
+                // Bersihkan Session
+                Session::forget(['temp_user_id', 'otp_code', 'otp_expires_at']);
+
+                return redirect()->route('dashboard');
+            }
+        }
+
+        return back()->withErrors(['otp_code' => 'Kode OTP salah atau sudah kadaluarsa.']);
+    }
+
+    // Fungsi untuk resend OTP
+    public function resendOtp(Request $request)
+    {
+        if (!Session::has('temp_user_id')) {
+            return redirect()->route('login')->withErrors('Silakan login via Google terlebih dahulu.');
+        }
+
+        $user = User::find(Session::get('temp_user_id'));
+        if (!$user) {
+            return redirect()->route('login')->withErrors('User tidak ditemukan.');
+        }
+
+        // Generate OTP baru
+        $otpCode = rand(100000, 999999);
+        $expiresAt = Carbon::now()->addMinutes(5);
+
+        // Update session
+        Session::put('otp_code', $otpCode);
+        Session::put('otp_expires_at', $expiresAt);
+
+        // Kirim email OTP baru
+        try {
+            Mail::to($user->email)->send(new OtpMail($user, $otpCode));
+            Log::info('New OTP email sent to: ' . $user->email);
+
+            return back()->with('success', 'Kode OTP baru telah dikirim ke email Anda.');
+        } catch (\Exception $e) {
+            Log::error('Failed to resend OTP email: ' . $e->getMessage());
+            return back()->withErrors('Gagal mengirim email OTP. Silakan coba lagi.');
         }
     }
 }
