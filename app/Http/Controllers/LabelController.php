@@ -10,8 +10,16 @@ use Illuminate\Http\Request;
  * LabelController
  *
  * Menangani fitur pencetakan label PDF pada kertas Tom & Jerry 108 (T&J 108).
- * Kertas T&J 108 memiliki layout grid 12 kolom x 9 baris = 108 label per lembar
- * pada kertas ukuran A4 (210mm x 297mm).
+ * Kertas T&J 108 memiliki layout grid 4 kolom x 10 baris = 40 label per lembar
+ * pada kertas ukuran kustom ±127mm x 205mm (sedikit lebih kecil dari A5).
+ *
+ * Spesifikasi Kertas T&J No. 108:
+ * - Ukuran Label (kemasan): 18mm x 38mm
+ * - Ukuran Lembar: ±127mm x 205mm
+ * - Layout: 4 Kolom x 10 Baris = 40 stiker/lembar
+ * - Margin Atas/Bawah: ±12mm, Kiri/Kanan: ±6mm
+ * - Jarak Horizontal: 2mm, Vertikal: 1mm
+ * - Material: Kertas HVS putih Self-Adhesive Sticker (Doff)
  *
  * Fitur utama:
  * - Pilih item (kategori) yang ingin dicetak
@@ -31,42 +39,57 @@ class LabelController extends Controller
      *   X = margin_left + (kolom - 1) * (label_width + h_gap)
      *   Y = margin_top  + (baris - 1) * (label_height + v_gap)
      *
-     * VERIFIKASI DIMENSI:
-     *   Total lebar  = margin_left + (cols * label_width) + ((cols-1) * h_gap) + margin_right = 210mm
-     *   Total tinggi = margin_top + (rows * label_height) + ((rows-1) * v_gap) + margin_bottom = 297mm
+     * PERHITUNGAN DIMENSI CELL LABEL:
+     *   label_width  = (paper_width  - margin_left - margin_right  - (cols-1)*h_gap) / cols
+     *                = (127 - 6 - 6 - 3*2) / 4 = 27.25mm
+     *   label_height = (paper_height - margin_top  - margin_bottom - (rows-1)*v_gap) / rows
+     *                = (205 - 12 - 12 - 9*1) / 10 = 17.2mm
      *
-     * CATATAN: Sesuaikan nilai-nilai ini dengan kertas T&J 108 yang sebenarnya.
-     * Gunakan halaman kalibrasi (/label/kalibrasi) untuk verifikasi dan fine-tuning.
+     * VERIFIKASI DIMENSI:
+     *   Total lebar  = margin_left + (cols * label_width) + ((cols-1) * h_gap) + margin_right = 127mm
+     *   Total tinggi = margin_top + (rows * label_height) + ((rows-1) * v_gap) + margin_bottom = 205mm
+     *
+     * CATATAN:
+     * - Stiker T&J 108 berukuran nominal 18mm x 38mm (pada kemasan).
+     * - Dimensi cell di bawah dihitung dari layout aktual kertas, margin, dan gap.
+     * - Gunakan halaman kalibrasi (/label/kalibrasi) untuk verifikasi dan fine-tuning.
+     * - Ukuran kertas di printer: Custom Size 12.7cm x 20.5cm
      *
      * @return array Konfigurasi dimensi label
      */
     private function getLabelConfig(): array
     {
         return [
-            // === Dimensi Kertas (A4) ===
-            'paper_width'   => 210,     // mm - Lebar kertas A4
-            'paper_height'  => 297,     // mm - Tinggi kertas A4
+            // === Dimensi Kertas T&J 108 (Custom Size) ===
+            // Sedikit lebih kecil dari A5 (±127mm x 205mm)
+            // Pengaturan printer: Custom Size 12.7cm x 20.5cm
+            'paper_width'   => 127,     // mm - Lebar kertas T&J 108
+            'paper_height'  => 205,     // mm - Tinggi kertas T&J 108
 
             // === Margin Kertas ===
-            'margin_top'    => 13.5,    // mm - Margin atas
-            'margin_left'   => 9,       // mm - Margin kiri
-            'margin_bottom' => 13.5,    // mm - Margin bawah (kalkulasi: 297 - 13.5 - 9*30 = 13.5)
-            'margin_right'  => 9,       // mm - Margin kanan (kalkulasi: 210 - 9 - 12*16 = 9)
+            'margin_top'    => 12,      // mm - Margin atas (±12mm)
+            'margin_left'   => 6,       // mm - Margin kiri (±6mm)
+            'margin_bottom' => 12,      // mm - Margin bawah (±12mm)
+            'margin_right'  => 6,       // mm - Margin kanan (±6mm)
 
-            // === Dimensi Label ===
-            'label_width'   => 16,      // mm - Lebar setiap label
-            'label_height'  => 30,      // mm - Tinggi setiap label
+            // === Dimensi Cell Label ===
+            // Dihitung: (paper - margins - gaps) / jumlah
+            // Stiker T&J 108 pada kemasan: 18mm x 38mm
+            'label_width'   => 27.25,   // mm - Lebar cell = (127-6-6-3*2)/4
+            'label_height'  => 17.2,    // mm - Tinggi cell = (205-12-12-9*1)/10
 
             // === Layout Grid ===
-            'cols'          => 12,      // Jumlah kolom per baris
-            'rows'          => 9,       // Jumlah baris per halaman
+            'cols'          => 4,       // 4 kolom per baris (Horizontal)
+            'rows'          => 10,      // 10 baris per halaman (Vertikal)
+            // Total: 4 x 10 = 40 stiker label per lembar
+            // Total per pak: 10 lembar x 40 = 400 stiker
 
             // === Jarak Antar Label ===
-            'h_gap'         => 0,       // mm - Jarak horizontal antar label (T&J 108 = 0)
-            'v_gap'         => 0,       // mm - Jarak vertikal antar label (T&J 108 = 0)
+            'h_gap'         => 2,       // mm - Jarak horizontal antar kolom
+            'v_gap'         => 1,       // mm - Jarak vertikal antar baris
 
             // === Pengaturan Teks ===
-            'font_size'     => 7,       // pt - Ukuran font default untuk label
+            'font_size'     => 8,       // pt - Ukuran font (8pt optimal untuk cell 27x17mm)
             'padding'       => 1,       // mm - Padding dalam label (safety margin dari tepi)
         ];
     }
@@ -103,8 +126,15 @@ class LabelController extends Controller
 
     /**
      * Generate halaman kalibrasi.
-     * Mencetak grid penuh 12x9 dengan label koordinat (B1-K1, B1-K2, dst)
+     * Mencetak grid penuh 4x10 dengan label koordinat (B1-K1, B1-K2, dst)
      * untuk verifikasi akurasi posisi cetak pada kertas T&J 108 sebenarnya.
+     *
+     * Instruksi:
+     * 1. Cetak halaman ini pada kertas T&J 108
+     * 2. Gunakan Custom Size 12.7cm x 20.5cm di pengaturan printer
+     * 3. Pastikan scaling = 100% (tanpa fit-to-page)
+     * 4. Verifikasi setiap label koordinat sejajar dengan posisi stiker
+     * 5. Jika meleset, sesuaikan margin di getLabelConfig()
      */
     public function calibration()
     {
@@ -121,8 +151,12 @@ class LabelController extends Controller
         $pages = [['labels' => $labelMap, 'page' => 1]];
         $totalPages = 1;
 
+        // Konversi mm ke pt untuk custom paper size (1mm = 72/25.4 pt)
+        $paperWidthPt  = $config['paper_width'] * 72 / 25.4;   // 127mm = 360pt
+        $paperHeightPt = $config['paper_height'] * 72 / 25.4;  // 205mm = 581.1pt
+
         $pdf = Pdf::loadView('pages.label.pdf', compact('config', 'pages', 'totalPages'))
-            ->setPaper('a4', 'portrait');
+            ->setPaper([0, 0, $paperWidthPt, $paperHeightPt], 'portrait');
 
         return $pdf->stream('kalibrasi-tj108.pdf');
     }
@@ -192,7 +226,7 @@ class LabelController extends Controller
         }
 
         // Hitung koordinat tersedia pada halaman pertama
-        // Urutan: (1,1) -> (1,2) -> ... -> (1,12) -> (2,1) -> ... -> (9,12)
+        // Urutan: (1,1) -> (1,2) -> ... -> (1,4) -> (2,1) -> ... -> (10,4)
         $availableCoords = [];
         for ($r = 1; $r <= $config['rows']; $r++) {
             for ($c = 1; $c <= $config['cols']; $c++) {
@@ -203,7 +237,7 @@ class LabelController extends Controller
         }
 
         $totalItems = count($labelsToPrint);
-        $totalPerPage = $config['rows'] * $config['cols']; // 108
+        $totalPerPage = $config['rows'] * $config['cols']; // 40 label per lembar
         $pages = [];
         $itemIndex = 0;
         $pageNum = 1;
@@ -218,7 +252,7 @@ class LabelController extends Controller
         }
         $pages[] = ['labels' => $pageLabels, 'page' => $pageNum];
 
-        // === Halaman 2+: semua 108 koordinat tersedia ===
+        // === Halaman 2+: semua 40 koordinat tersedia (lembar baru) ===
         while ($itemIndex < $totalItems) {
             $pageNum++;
             $pageLabels = [];
@@ -235,9 +269,13 @@ class LabelController extends Controller
 
         $totalPages = count($pages);
 
-        // Generate PDF
+        // Generate PDF dengan ukuran kertas kustom T&J 108
+        // Konversi mm ke pt: 1mm = 72/25.4 pt
+        $paperWidthPt  = $config['paper_width'] * 72 / 25.4;   // 127mm = 360pt
+        $paperHeightPt = $config['paper_height'] * 72 / 25.4;  // 205mm = 581.1pt
+
         $pdf = Pdf::loadView('pages.label.pdf', compact('config', 'pages', 'totalPages'))
-            ->setPaper('a4', 'portrait');
+            ->setPaper([0, 0, $paperWidthPt, $paperHeightPt], 'portrait');
 
         $filename = 'label-tj108-' . date('Y-m-d-His') . '.pdf';
 

@@ -2,9 +2,10 @@
     Halaman Cetak Label T&J 108
 
     Halaman utama untuk fitur pencetakan label pada kertas Tom & Jerry 108.
+    Spesifikasi: 4 kolom x 10 baris = 40 label per lembar (127mm x 205mm)
     Terdiri dari 3 bagian:
     1. Pilih Item: Checkbox daftar kategori dengan input jumlah
-    2. Konfigurasi Grid: Visual grid 12x9 untuk menandai posisi terpakai
+    2. Konfigurasi Grid: Visual grid 4x10 untuk menandai posisi terpakai
     3. Aksi: Tombol Preview, Download, dan Kalibrasi
 
     Interaksi sepenuhnya client-side menggunakan JavaScript vanilla.
@@ -18,7 +19,7 @@
 <style>
     /*
      * === GRID KOORDINAT ===
-     * Visual representation dari kertas T&J 108: 12 kolom x 9 baris.
+     * Visual representation dari kertas T&J 108: 4 kolom x 10 baris = 40 label.
      * Setiap sel bisa diklik untuk toggle status "terpakai".
      */
     .grid-container {
@@ -33,17 +34,17 @@
     }
 
     .grid-table th {
-        font-size: 11px;
-        padding: 4px 2px;
+        font-size: 12px;
+        padding: 6px 4px;
         text-align: center;
         color: #6c757d;
         font-weight: 600;
-        min-width: 54px;
+        min-width: 130px;
     }
 
     .grid-table th.row-header {
-        min-width: 38px;
-        padding-right: 6px;
+        min-width: 44px;
+        padding-right: 8px;
     }
 
     /*
@@ -54,15 +55,15 @@
      * - Terpakai/disabled (abu-abu/merah) -> user menandai posisi sudah terpakai
      */
     .grid-cell {
-        width: 54px;
-        height: 40px;
+        width: 130px;
+        height: 48px;
         border: 1px solid #dee2e6;
         text-align: center;
         vertical-align: middle;
         cursor: pointer;
-        font-size: 9px;
+        font-size: 11px;
         line-height: 1.2;
-        padding: 2px;
+        padding: 3px;
         transition: all 0.15s ease;
         position: relative;
         overflow: hidden;
@@ -113,7 +114,7 @@
 
     /* Label koordinat dalam sel */
     .grid-cell .coord-label {
-        font-size: 7px;
+        font-size: 10px;
         color: #adb5bd;
         display: block;
     }
@@ -124,14 +125,14 @@
     }
 
     .grid-cell .item-text {
-        font-size: 8px;
-        line-height: 1.1;
+        font-size: 10px;
+        line-height: 1.2;
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
-        -webkit-line-clamp: 3;
+        -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
-        max-height: 30px;
+        max-height: 36px;
     }
 
     /*
@@ -321,7 +322,7 @@
                                    id="qty-{{ $k->idkategori }}"
                                    value="1"
                                    min="1"
-                                   max="108"
+                                   max="999"
                                    disabled
                                    title="Jumlah label">
                         </div>
