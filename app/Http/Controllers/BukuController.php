@@ -36,4 +36,3 @@ class BukuController extends Controller
         return $pdf->download('daftar-buku-' . date('Y-m-d') . '.pdf');
     }
 }
-
