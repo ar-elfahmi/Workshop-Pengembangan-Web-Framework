@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Buku;
 use App\Models\Kategori;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -10,6 +11,8 @@ use Illuminate\Http\Request;
  * LabelController
  *
  * Menangani fitur pencetakan label PDF pada kertas Tom & Jerry 108 (T&J 108).
+ * Mendukung dua sumber data: Kategori dan Buku.
+ *
  * Kertas T&J 108 memiliki layout grid 4 kolom x 10 baris = 40 label per lembar
  * pada kertas ukuran kustom ±127mm x 205mm (sedikit lebih kecil dari A5).
  *
@@ -22,9 +25,9 @@ use Illuminate\Http\Request;
  * - Material: Kertas HVS putih Self-Adhesive Sticker (Doff)
  *
  * Fitur utama:
- * - Pilih item (kategori) yang ingin dicetak
+ * - Pilih item (kategori ATAU buku) yang ingin dicetak
  * - Konfigurasi grid koordinat (tandai posisi yang sudah terpakai)
- * - Preview PDF sebelum cetak
+ * - Preview PDF inline di browser (tanpa download)
  * - Download PDF siap cetak
  * - Halaman kalibrasi untuk verifikasi akurasi posisi
  */
@@ -96,14 +99,38 @@ class LabelController extends Controller
 
     /**
      * Halaman utama pencetakan label.
-     * Menampilkan daftar kategori dengan checkbox dan grid koordinat visual.
+     * Mendukung dua tipe data: 'kategori' (default) dan 'buku'.
+     * Tipe ditentukan via query parameter ?type=kategori|buku
      */
-    public function index()
+    public function index(Request $request)
     {
-        $kategori = Kategori::all();
+        $type = $request->query('type', 'kategori');
+        if (!in_array($type, ['kategori', 'buku'])) {
+            $type = 'kategori';
+        }
+
         $config = $this->getLabelConfig();
 
-        return view('pages.label.index', compact('kategori', 'config'));
+        // Load data sesuai tipe
+        if ($type === 'buku') {
+            $items = Buku::with('kategori')->get()->map(function ($b) {
+                return (object) [
+                    'id'   => $b->idbuku,
+                    'name' => $b->judul,
+                    'sub'  => $b->kode . ' — ' . ($b->kategori->nama_kategori ?? ''),
+                ];
+            });
+        } else {
+            $items = Kategori::all()->map(function ($k) {
+                return (object) [
+                    'id'   => $k->idkategori,
+                    'name' => $k->nama_kategori,
+                    'sub'  => '',
+                ];
+            });
+        }
+
+        return view('pages.label.index', compact('items', 'config', 'type'));
     }
 
     /**
@@ -180,9 +207,11 @@ class LabelController extends Controller
     {
         $request->validate([
             'selected_items' => 'required|string',
+            'type'           => 'required|in:kategori,buku',
         ]);
 
         $config = $this->getLabelConfig();
+        $type = $request->input('type', 'kategori');
 
         // Decode data JSON dari form
         $selectedIds = json_decode($request->input('selected_items'), true);
@@ -193,12 +222,22 @@ class LabelController extends Controller
             return back()->with('error', 'Pilih minimal satu item untuk dicetak.');
         }
 
-        // Ambil data kategori yang dipilih (urut sesuai urutan pilihan)
-        $kategoriMap = Kategori::whereIn('idkategori', $selectedIds)
-            ->get()
-            ->keyBy('idkategori');
+        // Ambil data sesuai tipe dan buat mapping id => label text
+        if ($type === 'buku') {
+            $dataMap = Buku::whereIn('idbuku', $selectedIds)
+                ->get()
+                ->keyBy('idbuku')
+                ->map(fn($b) => $b->judul);
+            $pkField = 'idbuku';
+        } else {
+            $dataMap = Kategori::whereIn('idkategori', $selectedIds)
+                ->get()
+                ->keyBy('idkategori')
+                ->map(fn($k) => $k->nama_kategori);
+            $pkField = 'idkategori';
+        }
 
-        if ($kategoriMap->isEmpty()) {
+        if ($dataMap->isEmpty()) {
             return back()->with('error', 'Item yang dipilih tidak ditemukan dalam database.');
         }
 
@@ -206,10 +245,10 @@ class LabelController extends Controller
         // Setiap entri = satu label yang perlu dicetak
         $labelsToPrint = [];
         foreach ($selectedIds as $id) {
-            if (!isset($kategoriMap[$id])) continue;
+            if (!isset($dataMap[$id])) continue;
             $qty = isset($quantities[$id]) ? max(1, (int)$quantities[$id]) : 1;
             for ($i = 0; $i < $qty; $i++) {
-                $labelsToPrint[] = $kategoriMap[$id]->nama_kategori;
+                $labelsToPrint[] = $dataMap[$id];
             }
         }
 
@@ -280,7 +319,12 @@ class LabelController extends Controller
         $filename = 'label-tj108-' . date('Y-m-d-His') . '.pdf';
 
         if ($output === 'stream') {
-            return $pdf->stream($filename);
+            // Preview inline: return response dengan Content-Disposition: inline
+            // agar browser menampilkan PDF di tab baru (bukan download)
+            return response($pdf->output(), 200)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'inline; filename="' . $filename . '"')
+                ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
         }
 
         return $pdf->download($filename);

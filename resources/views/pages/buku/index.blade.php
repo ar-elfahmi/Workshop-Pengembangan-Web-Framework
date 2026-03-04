@@ -58,9 +58,14 @@
             {{-- TABEL --}}
             <div class="d-flex justify-content-between align-items-center mb-3">
               <h4 class="card-title mb-0">Daftar Buku</h4>
-              <a href="{{ url('/buku/pdf') }}" class="btn btn-danger btn-sm" target="_blank">
-                <i class="mdi mdi-file-pdf"></i> Download PDF (Portrait)
-              </a>
+              <div>
+                <a href="{{ url('/label?type=buku') }}" class="btn btn-info btn-sm mr-1">
+                  <i class="mdi mdi-label-outline"></i> Cetak Label T&J
+                </a>
+                <a href="{{ url('/buku/pdf') }}" class="btn btn-danger btn-sm" target="_blank">
+                  <i class="mdi mdi-file-pdf"></i> Download PDF (Portrait)
+                </a>
+              </div>
             </div>
 
             <table class="table table-bordered">

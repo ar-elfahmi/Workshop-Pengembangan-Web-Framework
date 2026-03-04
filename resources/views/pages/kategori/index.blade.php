@@ -40,7 +40,12 @@
             @endif
 
             {{-- TABLE --}}
-            <h4 class="card-title mt-4">Daftar Kategori</h4>
+            <div class="d-flex justify-content-between align-items-center mt-4 mb-2">
+              <h4 class="card-title mb-0">Daftar Kategori</h4>
+              <a href="{{ url('/label?type=kategori') }}" class="btn btn-info btn-sm">
+                <i class="mdi mdi-label-outline"></i> Cetak Label T&J
+              </a>
+            </div>
 
             <table class="table table-bordered">
               <thead>

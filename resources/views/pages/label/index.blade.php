@@ -3,10 +3,20 @@
 
     Halaman utama untuk fitur pencetakan label pada kertas Tom & Jerry 108.
     Spesifikasi: 4 kolom x 10 baris = 40 label per lembar (127mm x 205mm)
+
+    Mendukung dua sumber data:
+    - Kategori: mencetak nama_kategori sebagai teks label
+    - Buku: mencetak judul buku sebagai teks label
+
     Terdiri dari 3 bagian:
-    1. Pilih Item: Checkbox daftar kategori dengan input jumlah
+    1. Pilih Item: Tab switcher + Checkbox daftar item dengan input jumlah
     2. Konfigurasi Grid: Visual grid 4x10 untuk menandai posisi terpakai
     3. Aksi: Tombol Preview, Download, dan Kalibrasi
+
+    Variabel dari controller:
+    - $type: 'kategori' atau 'buku'
+    - $items: Collection of {id, name, sub}
+    - $config: Array konfigurasi dimensi label
 
     Interaksi sepenuhnya client-side menggunakan JavaScript vanilla.
     Data dikirim ke server via form POST saat Preview/Download.
@@ -51,8 +61,8 @@
      * Sel grid: representasi 1 label pada kertas.
      * 3 state:
      * - Tersedia kosong (putih)          -> label bisa digunakan, belum ada item
-     * - Tersedia terisi (biru/hijau)     -> item sudah di-assign ke posisi ini
-     * - Terpakai/disabled (abu-abu/merah) -> user menandai posisi sudah terpakai
+     * - Tersedia terisi (hijau)          -> item sudah di-assign ke posisi ini
+     * - Terpakai/disabled (merah)        -> user menandai posisi sudah terpakai
      */
     .grid-cell {
         width: 130px;
@@ -162,6 +172,13 @@
         font-size: 14px;
     }
 
+    .item-row label small {
+        display: block;
+        font-size: 11px;
+        color: #888;
+        font-weight: normal;
+    }
+
     .qty-input {
         width: 55px;
         text-align: center;
@@ -234,6 +251,36 @@
     }
 
     /*
+     * === TYPE SWITCHER TABS ===
+     */
+    .type-tabs {
+        display: flex;
+        border-bottom: 2px solid #dee2e6;
+        margin-bottom: 12px;
+    }
+
+    .type-tab {
+        padding: 8px 20px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #6c757d;
+        text-decoration: none;
+        border-bottom: 3px solid transparent;
+        margin-bottom: -2px;
+        transition: all 0.2s ease;
+    }
+
+    .type-tab:hover {
+        color: #4B49AC;
+        text-decoration: none;
+    }
+
+    .type-tab.active {
+        color: #4B49AC;
+        border-bottom-color: #4B49AC;
+    }
+
+    /*
      * === NOTIFIKASI ===
      */
     .alert-floating {
@@ -284,15 +331,28 @@
         <div class="col-lg-4 col-md-5">
             <div class="card">
                 <div class="card-body">
+                    {{-- TAB SWITCHER: Kategori / Buku --}}
+                    <div class="type-tabs">
+                        <a href="{{ url('/label?type=kategori') }}"
+                           class="type-tab {{ $type === 'kategori' ? 'active' : '' }}">
+                            <i class="mdi mdi-format-list-bulleted"></i> Kategori
+                        </a>
+                        <a href="{{ url('/label?type=buku') }}"
+                           class="type-tab {{ $type === 'buku' ? 'active' : '' }}">
+                            <i class="mdi mdi-book-open-variant"></i> Buku
+                        </a>
+                    </div>
+
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="card-title mb-0">
-                            <i class="mdi mdi-checkbox-marked-outline"></i> Pilih Item
+                            <i class="mdi mdi-checkbox-marked-outline"></i>
+                            Pilih {{ $type === 'buku' ? 'Buku' : 'Kategori' }}
                         </h4>
                         <span class="badge badge-primary" id="selectedCount">0 dipilih</span>
                     </div>
 
                     <p class="text-muted" style="font-size: 12px;">
-                        Centang kategori yang ingin dicetak dan tentukan jumlah label per kategori.
+                        Centang {{ $type === 'buku' ? 'buku' : 'kategori' }} yang ingin dicetak dan tentukan jumlah label.
                     </p>
 
                     {{-- Tombol Select All / Deselect All --}}
@@ -307,19 +367,22 @@
 
                     {{-- Daftar Item --}}
                     <div style="max-height: 400px; overflow-y: auto; border: 1px solid #eee; border-radius: 6px;">
-                        @forelse ($kategori as $k)
-                        <div class="item-row" data-id="{{ $k->idkategori }}">
+                        @forelse ($items as $item)
+                        <div class="item-row" data-id="{{ $item->id }}">
                             <input type="checkbox"
                                    class="item-checkbox mr-2"
-                                   id="kat-{{ $k->idkategori }}"
-                                   value="{{ $k->idkategori }}"
-                                   data-name="{{ $k->nama_kategori }}">
-                            <label for="kat-{{ $k->idkategori }}" class="mr-2">
-                                {{ $k->nama_kategori }}
+                                   id="item-{{ $item->id }}"
+                                   value="{{ $item->id }}"
+                                   data-name="{{ $item->name }}">
+                            <label for="item-{{ $item->id }}" class="mr-2">
+                                {{ $item->name }}
+                                @if ($item->sub)
+                                    <small>{{ $item->sub }}</small>
+                                @endif
                             </label>
                             <input type="number"
                                    class="qty-input"
-                                   id="qty-{{ $k->idkategori }}"
+                                   id="qty-{{ $item->id }}"
                                    value="1"
                                    min="1"
                                    max="999"
@@ -329,7 +392,11 @@
                         @empty
                         <div class="text-center text-muted py-4">
                             <i class="mdi mdi-alert-circle-outline" style="font-size: 32px;"></i>
-                            <p class="mt-2 mb-0">Belum ada kategori. <a href="{{ url('/kategori') }}">Tambah kategori</a></p>
+                            @if ($type === 'buku')
+                                <p class="mt-2 mb-0">Belum ada buku. <a href="{{ url('/buku') }}">Tambah buku</a></p>
+                            @else
+                                <p class="mt-2 mb-0">Belum ada kategori. <a href="{{ url('/kategori') }}">Tambah kategori</a></p>
+                            @endif
                         </div>
                         @endforelse
                     </div>
@@ -437,7 +504,7 @@
                     {{-- TOMBOL AKSI --}}
                     <div class="d-flex flex-wrap justify-content-between align-items-center">
                         <div>
-                            {{-- Preview PDF (buka di tab baru) --}}
+                            {{-- Preview PDF (buka inline di tab baru via fetch+Blob) --}}
                             <button type="button" class="btn btn-info mr-2" id="btnPreview">
                                 <i class="mdi mdi-eye"></i> Preview PDF
                             </button>
@@ -474,12 +541,13 @@
     </div>
 </div>
 
-{{-- Form tersembunyi untuk submit ke server --}}
-<form id="labelForm" method="POST" target="_blank" style="display: none;">
+{{-- Form tersembunyi untuk submit download ke server --}}
+<form id="labelFormDownload" method="POST" action="{{ route('label.download') }}" target="_blank" style="display: none;">
     @csrf
-    <input type="hidden" name="selected_items" id="formSelectedItems">
-    <input type="hidden" name="used_coords" id="formUsedCoords">
-    <input type="hidden" name="quantities" id="formQuantities">
+    <input type="hidden" name="type" value="{{ $type }}">
+    <input type="hidden" name="selected_items" id="formDownloadSelectedItems">
+    <input type="hidden" name="used_coords" id="formDownloadUsedCoords">
+    <input type="hidden" name="quantities" id="formDownloadQuantities">
 </form>
 @endsection
 
@@ -497,27 +565,26 @@
  * 2. User klik grid → toggle usedCoords
  * 3. JS auto-assign item ke koordinat tersedia
  * 4. Grid di-update visual secara real-time
- * 5. User klik Preview/Download → data dikirim ke server via form POST
+ * 5. Preview: fetch() + Blob URL (inline PDF di tab baru)
+ * 6. Download: form POST (trigger download)
  */
 document.addEventListener('DOMContentLoaded', function () {
 
-    // === KONFIGURASI GRID ===
+    // === KONFIGURASI ===
     const CONFIG = {
         rows: {{ $config['rows'] }},
         cols: {{ $config['cols'] }},
         totalPerPage: {{ $config['rows'] * $config['cols'] }}
     };
 
-    // === STATE ===
-    // Map item: id => { name: string, qty: number }
-    const selectedItems = new Map();
+    const DATA_TYPE = '{{ $type }}';
 
-    // Set koordinat terpakai: "row-col"
+    // === STATE ===
+    const selectedItems = new Map();
     const usedCoords = new Set();
 
     // === DOM ELEMENTS ===
     const gridTable       = document.getElementById('gridTable');
-    const formEl          = document.getElementById('labelForm');
     const btnPreview      = document.getElementById('btnPreview');
     const btnDownload     = document.getElementById('btnDownload');
     const btnSelectAll    = document.getElementById('btnSelectAll');
@@ -539,9 +606,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // ITEM SELECTION HANDLERS
     // ========================================================
 
-    /**
-     * Handler untuk checkbox item
-     */
     document.querySelectorAll('.item-checkbox').forEach(function (cb) {
         cb.addEventListener('change', function () {
             const id = this.value;
@@ -563,25 +627,18 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    /**
-     * Handler untuk input jumlah
-     */
     document.querySelectorAll('.qty-input').forEach(function (input) {
         input.addEventListener('change', function () {
             const id = this.id.replace('qty-', '');
             if (selectedItems.has(id)) {
                 const val = Math.max(1, Math.min(999, parseInt(this.value) || 1));
                 this.value = val;
-                const item = selectedItems.get(id);
-                item.qty = val;
+                selectedItems.get(id).qty = val;
                 updateAll();
             }
         });
     });
 
-    /**
-     * Pilih semua item
-     */
     btnSelectAll.addEventListener('click', function () {
         document.querySelectorAll('.item-checkbox').forEach(function (cb) {
             if (!cb.checked) {
@@ -591,9 +648,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    /**
-     * Hapus semua pilihan
-     */
     btnDeselectAll.addEventListener('click', function () {
         document.querySelectorAll('.item-checkbox').forEach(function (cb) {
             if (cb.checked) {
@@ -607,33 +661,20 @@ document.addEventListener('DOMContentLoaded', function () {
     // GRID KOORDINAT HANDLERS
     // ========================================================
 
-    /**
-     * Handler klik sel grid.
-     * Toggle antara state "available" dan "used".
-     * Sel yang "assigned" (berisi item) tidak bisa diklik menjadi used.
-     */
     gridTable.addEventListener('click', function (e) {
         const cell = e.target.closest('.grid-cell');
         if (!cell) return;
 
-        const row = cell.dataset.row;
-        const col = cell.dataset.col;
-        const key = row + '-' + col;
+        const key = cell.dataset.row + '-' + cell.dataset.col;
 
         if (usedCoords.has(key)) {
-            // Bersihkan status terpakai
             usedCoords.delete(key);
         } else {
-            // Tandai sebagai terpakai
             usedCoords.add(key);
         }
-
         updateAll();
     });
 
-    /**
-     * Tandai semua posisi sebagai terpakai
-     */
     btnMarkAllUsed.addEventListener('click', function () {
         for (let r = 1; r <= CONFIG.rows; r++) {
             for (let c = 1; c <= CONFIG.cols; c++) {
@@ -643,9 +684,6 @@ document.addEventListener('DOMContentLoaded', function () {
         updateAll();
     });
 
-    /**
-     * Bersihkan semua tanda terpakai
-     */
     btnClearAllUsed.addEventListener('click', function () {
         usedCoords.clear();
         updateAll();
@@ -655,14 +693,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // CORE: UPDATE ALL STATE & VISUAL
     // ========================================================
 
-    /**
-     * Fungsi utama yang dipanggil setiap kali state berubah.
-     * 1. Buat daftar label yang harus dicetak (item x qty)
-     * 2. Hitung koordinat tersedia
-     * 3. Mapping label ke koordinat
-     * 4. Update visual grid
-     * 5. Update statistik
-     */
     function updateAll() {
         // 1. Buat daftar label (memperhitungkan kuantitas)
         const labels = [];
@@ -672,7 +702,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // 2. Hitung koordinat tersedia (urut baris demi baris)
+        // 2. Hitung koordinat tersedia
         const available = [];
         for (let r = 1; r <= CONFIG.rows; r++) {
             for (let c = 1; c <= CONFIG.cols; c++) {
@@ -682,27 +712,21 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
 
-        // 3. Mapping label ke koordinat tersedia
-        const assignmentMap = {}; // "row-col" => labelName
-        const maxFirstPage = available.length;
+        // 3. Mapping label ke koordinat
+        const assignmentMap = {};
         let labelIndex = 0;
-
-        // Halaman 1
         for (let i = 0; i < available.length && labelIndex < labels.length; i++) {
-            const key = available[i].row + '-' + available[i].col;
-            assignmentMap[key] = labels[labelIndex].name;
+            assignmentMap[available[i].row + '-' + available[i].col] = labels[labelIndex].name;
             labelIndex++;
         }
 
-        // 4. Update visual grid (hanya halaman 1 ditampilkan)
+        // 4. Update visual grid
         for (let r = 1; r <= CONFIG.rows; r++) {
             for (let c = 1; c <= CONFIG.cols; c++) {
                 const key = r + '-' + c;
                 const cell = document.getElementById('cell-' + key);
                 const itemText = cell.querySelector('.item-text');
-                const coordLabel = cell.querySelector('.coord-label');
 
-                // Reset class
                 cell.className = 'grid-cell';
 
                 if (usedCoords.has(key)) {
@@ -728,21 +752,17 @@ document.addEventListener('DOMContentLoaded', function () {
             if (totalLabels <= totalAvailable) {
                 totalPages = 1;
             } else {
-                // Halaman 1: totalAvailable label
-                // Halaman 2+: setiap halaman 108 label (semua tersedia)
                 const remaining = totalLabels - totalAvailable;
                 totalPages = 1 + Math.ceil(remaining / CONFIG.totalPerPage);
             }
         }
 
-        // Update statistik UI
         statTotalLabels.textContent = totalLabels;
         statAvailable.textContent = totalAvailable;
         statUsed.textContent = totalUsed;
         statPages.textContent = totalPages;
         selectedCount.textContent = selectedItems.size + ' dipilih';
 
-        // Update alert multi-halaman
         if (totalPages > 1) {
             alertMultiPage.classList.remove('d-none');
             alertMultiPageText.textContent =
@@ -753,12 +773,7 @@ document.addEventListener('DOMContentLoaded', function () {
             alertMultiPage.classList.add('d-none');
         }
 
-        // Update alert no items
-        if (totalLabels === 0) {
-            alertNoItems.classList.remove('d-none');
-        } else {
-            alertNoItems.classList.add('d-none');
-        }
+        alertNoItems.classList.toggle('d-none', totalLabels > 0);
     }
 
     // ========================================================
@@ -766,16 +781,14 @@ document.addEventListener('DOMContentLoaded', function () {
     // ========================================================
 
     /**
-     * Siapkan data form dan submit
-     * @param {string} actionUrl URL endpoint
+     * Mengumpulkan data form yang diperlukan untuk generate PDF
      */
-    function submitForm(actionUrl) {
+    function collectFormData() {
         if (selectedItems.size === 0) {
             showNotification('Pilih minimal satu item untuk dicetak.', 'warning');
-            return;
+            return null;
         }
 
-        // Siapkan data
         const ids = [];
         const quantities = {};
         selectedItems.forEach(function (item, id) {
@@ -789,42 +802,82 @@ document.addEventListener('DOMContentLoaded', function () {
             coordsArray.push([parseInt(parts[0]), parseInt(parts[1])]);
         });
 
-        // Isi form
-        document.getElementById('formSelectedItems').value = JSON.stringify(ids);
-        document.getElementById('formUsedCoords').value = JSON.stringify(coordsArray);
-        document.getElementById('formQuantities').value = JSON.stringify(quantities);
-
-        // Submit
-        formEl.action = actionUrl;
-        formEl.submit();
+        return {
+            type: DATA_TYPE,
+            selected_items: JSON.stringify(ids),
+            used_coords: JSON.stringify(coordsArray),
+            quantities: JSON.stringify(quantities)
+        };
     }
 
     /**
-     * Preview PDF (buka di tab baru)
+     * Preview PDF menggunakan fetch() + Blob URL.
+     * Ini memastikan PDF ditampilkan inline di tab baru, BUKAN di-download.
+     * Berbeda dari form submit yang bergantung pada Content-Disposition header
+     * yang kadang diabaikan browser.
      */
     btnPreview.addEventListener('click', function () {
-        submitForm('{{ route("label.preview") }}');
+        const data = collectFormData();
+        if (!data) return;
+
+        // Tampilkan loading state
+        btnPreview.disabled = true;
+        btnPreview.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Generating...';
+
+        // Buat FormData
+        const formData = new FormData();
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('type', data.type);
+        formData.append('selected_items', data.selected_items);
+        formData.append('used_coords', data.used_coords);
+        formData.append('quantities', data.quantities);
+
+        // Fetch PDF sebagai blob, lalu buka sebagai Blob URL di tab baru
+        fetch('{{ route("label.preview") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function (response) {
+            if (!response.ok) throw new Error('Gagal generate PDF. Status: ' + response.status);
+            return response.blob();
+        })
+        .then(function (blob) {
+            var pdfBlob = new Blob([blob], { type: 'application/pdf' });
+            var url = URL.createObjectURL(pdfBlob);
+            window.open(url, '_blank');
+            // Bersihkan Blob URL setelah 1 menit
+            setTimeout(function () { URL.revokeObjectURL(url); }, 60000);
+        })
+        .catch(function (err) {
+            showNotification('Gagal generate preview: ' + err.message, 'danger');
+        })
+        .finally(function () {
+            btnPreview.disabled = false;
+            btnPreview.innerHTML = '<i class="mdi mdi-eye"></i> Preview PDF';
+        });
     });
 
     /**
-     * Download PDF
+     * Download PDF via hidden form submit
      */
     btnDownload.addEventListener('click', function () {
-        submitForm('{{ route("label.download") }}');
+        const data = collectFormData();
+        if (!data) return;
+
+        document.getElementById('formDownloadSelectedItems').value = data.selected_items;
+        document.getElementById('formDownloadUsedCoords').value = data.used_coords;
+        document.getElementById('formDownloadQuantities').value = data.quantities;
+
+        document.getElementById('labelFormDownload').submit();
     });
 
     // ========================================================
     // UTILITAS
     // ========================================================
 
-    /**
-     * Tampilkan notifikasi floating
-     * @param {string} message Teks pesan
-     * @param {string} type Tipe alert (success, danger, warning, info)
-     */
     function showNotification(message, type) {
         type = type || 'info';
-        const alertDiv = document.createElement('div');
+        var alertDiv = document.createElement('div');
         alertDiv.className = 'alert alert-' + type + ' alert-floating alert-dismissible fade show';
         alertDiv.setAttribute('role', 'alert');
         alertDiv.innerHTML =
@@ -835,7 +888,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.body.appendChild(alertDiv);
 
-        // Auto-remove setelah 4 detik
         setTimeout(function () {
             if (alertDiv.parentNode) {
                 alertDiv.classList.remove('show');
