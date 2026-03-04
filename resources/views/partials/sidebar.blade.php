@@ -39,6 +39,13 @@
                 <span class="menu-title">Reports</span>
                 <i class="mdi mdi-file-chart menu-icon"></i>
               </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="label">
+                <span class="menu-title">Cetak Label</span>
+                <i class="mdi mdi-label-outline menu-icon"></i>
+              </a>
+            </li>
             <!-- </li>
             <li class="nav-item">
               <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">

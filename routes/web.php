@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BukuController;
 use App\Http\Controllers\KategoriController;
+use App\Http\Controllers\LabelController;
 use App\Http\Controllers\ReportsController;
 use Illuminate\Support\Facades\Route;
 
@@ -40,4 +41,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/reports', [ReportsController::class, 'index']);
     Route::get('/reports/pdf', [ReportsController::class, 'downloadPdf'])->name('reports.pdf');
+
+    // === Label T&J 108 ===
+    Route::get('/label', [LabelController::class, 'index'])->name('label.index');
+    Route::post('/label/preview', [LabelController::class, 'preview'])->name('label.preview');
+    Route::post('/label/download', [LabelController::class, 'download'])->name('label.download');
+    Route::get('/label/kalibrasi', [LabelController::class, 'calibration'])->name('label.calibration');
 });
