@@ -58,9 +58,14 @@
             {{-- TABEL --}}
             <div class="d-flex justify-content-between align-items-center mb-3">
               <h4 class="card-title mb-0">Daftar Buku</h4>
-              <a href="{{ url('/buku/pdf') }}" class="btn btn-danger btn-sm" target="_blank">
-                <i class="mdi mdi-file-pdf"></i> Download PDF (Portrait)
-              </a>
+              <div>
+                <a href="{{ route('buku.labels.index') }}" class="btn btn-info btn-sm">
+                  <i class="mdi mdi-printer"></i> Cetak Label TnJ 108
+                </a>
+                <a href="{{ url('/buku/pdf') }}" class="btn btn-danger btn-sm" target="_blank">
+                  <i class="mdi mdi-file-pdf"></i> Download PDF (Portrait)
+                </a>
+              </div>
             </div>
 
             <table class="table table-bordered">
