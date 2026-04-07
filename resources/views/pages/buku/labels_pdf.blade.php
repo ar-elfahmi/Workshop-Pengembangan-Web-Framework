@@ -52,10 +52,10 @@
     }
   </style>
 </head>
-<body style="font-size: {{ $config['font_size_pt'] }}pt;">
-  <div class="paper" style="width: {{ $config['paper_width_mm'] }}mm; height: {{ $config['paper_height_mm'] }}mm;">
+<body style="font-size: <?php echo e($config['font_size_pt']); ?>pt;">
+  <div class="paper" style="width: <?php echo e($config['paper_width_mm']); ?>mm; height: <?php echo e($config['paper_height_mm']); ?>mm;">
     @foreach ($placements as $placement)
-      <div class="label-item" style="left: {{ $placement['x'] }}mm; top: {{ $placement['y'] }}mm; width: {{ $config['cell_width_mm'] }}mm; height: {{ $config['cell_height_mm'] }}mm;">
+      <div class="label-item" style="left: <?php echo e($placement['x']); ?>mm; top: <?php echo e($placement['y']); ?>mm; width: <?php echo e($config['cell_width_mm']); ?>mm; height: <?php echo e($config['cell_height_mm']); ?>mm;">
         <div class="title">{{ $placement['book']->judul ?? '-' }}</div>
         <div class="meta">{{ $placement['book']->kategori->nama_kategori ?? '-' }}</div>
         <div class="meta2">{{ $placement['book']->kode ?? '-' }} | {{ $placement['book']->pengarang ?? '-' }}</div>
