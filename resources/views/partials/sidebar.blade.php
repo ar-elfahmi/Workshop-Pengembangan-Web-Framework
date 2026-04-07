@@ -33,6 +33,18 @@
                 <span class="menu-title">Buku</span>
                 <i class="mdi mdi-table-large menu-icon"></i>
               </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ route('buku.labels.index') }}">
+                <span class="menu-title">Cetak Label</span>
+                <i class="mdi mdi-printer menu-icon"></i>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="reports">
+                <span class="menu-title">Reports</span>
+                <i class="mdi mdi-file-chart menu-icon"></i>
+              </a>
             <!-- </li>
             <li class="nav-item">
               <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">

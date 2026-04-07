@@ -5,6 +5,8 @@ use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BukuController;
 use App\Http\Controllers\KategoriController;
+use App\Http\Controllers\LabelPrintController;
+use App\Http\Controllers\ReportsController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -35,4 +37,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/buku', [BukuController::class, 'index']);
     Route::post('/buku', [BukuController::class, 'store']);
+    Route::get('/buku/pdf', [BukuController::class, 'downloadPdf'])->name('buku.pdf');
+    Route::get('/buku/labels', [LabelPrintController::class, 'index'])->name('buku.labels.index');
+    Route::post('/buku/labels/pdf', [LabelPrintController::class, 'generatePdf'])->name('buku.labels.pdf');
+
+    Route::get('/reports', [ReportsController::class, 'index']);
+    Route::get('/reports/pdf', [ReportsController::class, 'downloadPdf'])->name('reports.pdf');
 });
