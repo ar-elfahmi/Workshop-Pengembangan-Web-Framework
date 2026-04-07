@@ -6,7 +6,9 @@ use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\BukuController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LabelPrintController;
+use App\Http\Controllers\PosController;
 use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -32,10 +34,22 @@ Route::get('/dashboard', [App\Http\Controllers\HomeController::class, 'index'])-
 
 Route::middleware('auth')->group(function () {
 
+    Route::get('/ajax/wilayah', [WilayahController::class, 'ajaxPage'])->name('wilayah.ajax.page');
+    Route::get('/axios/wilayah', [WilayahController::class, 'axiosPage'])->name('wilayah.axios.page');
+    Route::get('/wilayah/provinsi', [WilayahController::class, 'getProvinsi'])->name('wilayah.provinsi');
+    Route::post('/wilayah/kota', [WilayahController::class, 'getKota'])->name('wilayah.kota');
+    Route::post('/wilayah/kecamatan', [WilayahController::class, 'getKecamatan'])->name('wilayah.kecamatan');
+    Route::post('/wilayah/kelurahan', [WilayahController::class, 'getKelurahan'])->name('wilayah.kelurahan');
+
+    Route::get('/ajax/pos', [PosController::class, 'ajaxPage'])->name('pos.ajax.page');
+    Route::get('/axios/pos', [PosController::class, 'axiosPage'])->name('pos.axios.page');
+    Route::post('/pos/find-item', [PosController::class, 'findItem'])->name('pos.find-item');
+    Route::post('/pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
+
     Route::get('/kategori', [KategoriController::class, 'index']);
     Route::post('/kategori', [KategoriController::class, 'store']);
 
-    Route::get('/buku', [BukuController::class, 'index']);
+    Route::get('/buku', [BukuController::class, 'index'])->name('buku');
     Route::post('/buku', [BukuController::class, 'store']);
     Route::get('/buku/pdf', [BukuController::class, 'downloadPdf'])->name('buku.pdf');
     Route::get('/buku/labels', [LabelPrintController::class, 'index'])->name('buku.labels.index');

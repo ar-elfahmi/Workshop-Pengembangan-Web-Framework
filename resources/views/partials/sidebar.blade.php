@@ -1,51 +1,75 @@
-
-        <!-- partial:{{ asset('purple-free/dist/partials/_sidebar.html')}} -->
-        <nav class="sidebar sidebar-offcanvas" id="sidebar">
-          <ul class="nav">
-            <li class="nav-item nav-profile">
-              <a href="#" class="nav-link">
-                <div class="nav-profile-image">
-                  <img src="{{ asset('purple-free/dist/assets/images/faces/face1.jpg')}}" alt="profile" />
-                  <span class="login-status online"></span>
-                  <!--change to offline or busy as needed-->
-                </div>
-                <div class="nav-profile-text d-flex flex-column">
-                  <span class="font-weight-bold mb-2">David Grey. H</span>
-                  <span class="text-secondary text-small">Project Manager</span>
-                </div>
-                <i class="mdi mdi-bookmark-check text-success nav-profile-badge"></i>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="dashboard">
-                <span class="menu-title">Dashboard</span>
-                <i class="mdi mdi-home menu-icon"></i>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="kategori">
-                <span class="menu-title">Kategori</span>
-                <i class="mdi mdi-format-list-bulleted menu-icon"></i>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="buku">
-                <span class="menu-title">Buku</span>
-                <i class="mdi mdi-table-large menu-icon"></i>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ route('buku.labels.index') }}">
-                <span class="menu-title">Cetak Label</span>
-                <i class="mdi mdi-printer menu-icon"></i>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="reports">
-                <span class="menu-title">Reports</span>
-                <i class="mdi mdi-file-chart menu-icon"></i>
-              </a>
-            <!-- </li>
+<!-- partial:{{ asset('purple-free/dist/partials/_sidebar.html')}} -->
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
+  <ul class="nav">
+    <li class="nav-item nav-profile">
+      <a href="#" class="nav-link">
+        <div class="nav-profile-image">
+          <img src="{{ asset('purple-free/dist/assets/images/faces/face1.jpg')}}" alt="profile" />
+          <span class="login-status online"></span>
+          <!--change to offline or busy as needed-->
+        </div>
+        <div class="nav-profile-text d-flex flex-column">
+          <span class="font-weight-bold mb-2">David Grey. H</span>
+          <span class="text-secondary text-small">Project Manager</span>
+        </div>
+        <i class="mdi mdi-bookmark-check text-success nav-profile-badge"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="dashboard">
+        <span class="menu-title">Dashboard</span>
+        <i class="mdi mdi-home menu-icon"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="kategori">
+        <span class="menu-title">Kategori</span>
+        <i class="mdi mdi-format-list-bulleted menu-icon"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route('buku') }}">
+        <span class="menu-title">Buku</span>
+        <i class="mdi mdi-table-large menu-icon"></i>
+      </a>
+    </li>
+    <!-- <li class="nav-item">
+      <a class="nav-link" href="{{ route('buku.labels.index') }}">
+        <span class="menu-title">Cetak Label</span>
+        <i class="mdi mdi-printer menu-icon"></i>
+      </a>
+    </li> -->
+    <li class="nav-item">
+      <a class="nav-link" href="reports">
+        <span class="menu-title">Reports</span>
+        <i class="mdi mdi-file-chart menu-icon"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route('wilayah.ajax.page') }}">
+        <span class="menu-title">Wilayah AJAX</span>
+        <i class="mdi mdi-map-marker menu-icon"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route('wilayah.axios.page') }}">
+        <span class="menu-title">Wilayah Axios</span>
+        <i class="mdi mdi-map menu-icon"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route('pos.ajax.page') }}">
+        <span class="menu-title">POS AJAX</span>
+        <i class="mdi mdi-cart menu-icon"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route('pos.axios.page') }}">
+        <span class="menu-title">POS Axios</span>
+        <i class="mdi mdi-cash menu-icon"></i>
+      </a>
+    </li>
+    <!-- </li>
             <li class="nav-item">
               <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
                 <span class="menu-title">Basic UI Elements</span>
@@ -118,38 +142,38 @@
                 </ul>
               </div>
             </li> -->
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
-                <span class="menu-title">User Pages</span>
-                <i class="menu-arrow"></i>
-                <i class="mdi mdi-lock menu-icon"></i>
-              </a>
-              <div class="collapse" id="auth">
-                <ul class="nav flex-column sub-menu">
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/blank-page.html')}}"> Blank Page </a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/login.html')}}"> Login </a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/register.html')}}"> Register </a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/error-404.html')}}"> 404 </a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/error-500.html')}}"> 500 </a>
-                  </li>
-                </ul>
-              </div>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ asset('purple-free/dist/docs/documentation.html')}}" target="_blank">
-                <span class="menu-title">Documentation</span>
-                <i class="mdi mdi-file-document-box menu-icon"></i>
-              </a>
-            </li>
-          </ul>
-        </nav>
-        <!-- partial -->
+    <li class="nav-item">
+      <a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
+        <span class="menu-title">User Pages</span>
+        <i class="menu-arrow"></i>
+        <i class="mdi mdi-lock menu-icon"></i>
+      </a>
+      <div class="collapse" id="auth">
+        <ul class="nav flex-column sub-menu">
+          <li class="nav-item">
+            <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/blank-page.html')}}"> Blank Page </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/login.html')}}"> Login </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/register.html')}}"> Register </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/error-404.html')}}"> 404 </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/error-500.html')}}"> 500 </a>
+          </li>
+        </ul>
+      </div>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ asset('purple-free/dist/docs/documentation.html')}}" target="_blank">
+        <span class="menu-title">Documentation</span>
+        <i class="mdi mdi-file-document-box menu-icon"></i>
+      </a>
+    </li>
+  </ul>
+</nav>
+<!-- partial -->
