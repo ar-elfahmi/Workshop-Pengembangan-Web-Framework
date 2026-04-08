@@ -1,5 +1,9 @@
 <!-- partial:{{ asset('purple-free/dist/partials/_sidebar.html')}} -->
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
+  @php
+  $user = auth()->user();
+  $role = $user->role ?? 'guest';
+  @endphp
   <ul class="nav">
     <li class="nav-item nav-profile">
       <a href="#" class="nav-link">
@@ -9,12 +13,29 @@
           <!--change to offline or busy as needed-->
         </div>
         <div class="nav-profile-text d-flex flex-column">
-          <span class="font-weight-bold mb-2">David Grey. H</span>
-          <span class="text-secondary text-small">Project Manager</span>
+          <span class="font-weight-bold mb-2">{{ $user->name ?? 'Guest User' }}</span>
+          <span class="text-secondary text-small text-uppercase">{{ $role }}</span>
         </div>
         <i class="mdi mdi-bookmark-check text-success nav-profile-badge"></i>
       </a>
     </li>
+
+    @if ($role === 'vendor')
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route('vendor.menu') }}">
+        <span class="menu-title">Tambah Menu</span>
+        <i class="mdi mdi-food menu-icon"></i>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route('vendor.orders') }}">
+        <span class="menu-title">Lihat Pesanan</span>
+        <i class="mdi mdi-receipt menu-icon"></i>
+      </a>
+    </li>
+    @endif
+
+    @if ($role !== 'vendor')
     <li class="nav-item">
       <a class="nav-link" href="dashboard">
         <span class="menu-title">Dashboard</span>
@@ -69,6 +90,7 @@
         <i class="mdi mdi-cash menu-icon"></i>
       </a>
     </li>
+    @endif
     <!-- </li>
             <li class="nav-item">
               <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">

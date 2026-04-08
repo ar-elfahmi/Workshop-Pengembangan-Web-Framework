@@ -1,77 +1,81 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="en">
 
-@section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Register') }}</div>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Purple Admin - Register</title>
+    <link rel="stylesheet" href="{{ asset('purple-free/dist/assets/vendors/mdi/css/materialdesignicons.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('purple-free/dist/assets/vendors/ti-icons/css/themify-icons.css') }}">
+    <link rel="stylesheet" href="{{ asset('purple-free/dist/assets/vendors/css/vendor.bundle.base.css') }}">
+    <link rel="stylesheet" href="{{ asset('purple-free/dist/assets/vendors/font-awesome/css/font-awesome.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('purple-free/dist/assets/css/style.css') }}">
+    <link rel="shortcut icon" href="{{ asset('purple-free/dist/assets/images/favicon.png') }}" />
+</head>
 
-                <div class="card-body">
-                    <form method="POST" action="{{ route('register') }}">
-                        @csrf
-
-                        <div class="row mb-3">
-                            <label for="name" class="col-md-4 col-form-label text-md-end">{{ __('Name') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="name" type="text" class="form-control @error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus>
-
-                                @error('name')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+<body>
+    <div class="container-scroller">
+        <div class="container-fluid page-body-wrapper full-page-wrapper">
+            <div class="content-wrapper d-flex align-items-center auth">
+                <div class="row flex-grow">
+                    <div class="col-lg-5 mx-auto">
+                        <div class="auth-form-light text-left p-5">
+                            <div class="brand-logo">
+                                <img src="{{ asset('purple-free/dist/assets/images/logo.svg') }}">
                             </div>
-                        </div>
+                            <h4>Buat akun baru</h4>
+                            <h6 class="font-weight-light">Pilih role Admin atau Vendor.</h6>
 
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email">
-
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                            @if ($errors->any())
+                            <div class="alert alert-danger mt-3">
+                                <ul class="mb-0">
+                                    @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
                             </div>
+                            @endif
+
+                            <form class="pt-3" method="POST" action="{{ route('register') }}">
+                                @csrf
+                                <div class="form-group">
+                                    <input type="text" class="form-control form-control-lg" name="name" value="{{ old('name') }}" placeholder="Name" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="email" class="form-control form-control-lg" name="email" value="{{ old('email') }}" placeholder="Email" required>
+                                </div>
+                                <div class="form-group">
+                                    <select class="form-control form-control-lg" name="role" required>
+                                        <option value="">Pilih Role</option>
+                                        <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>Admin</option>
+                                        <option value="vendor" {{ old('role') === 'vendor' ? 'selected' : '' }}>Vendor</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <input type="password" class="form-control form-control-lg" name="password" placeholder="Password" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="password" class="form-control form-control-lg" name="password_confirmation" placeholder="Confirm Password" required>
+                                </div>
+                                <div class="mt-3 d-grid gap-2">
+                                    <button type="submit" class="btn btn-block btn-gradient-primary btn-lg font-weight-medium auth-form-btn">REGISTER</button>
+                                </div>
+                                <div class="text-center mt-4 font-weight-light"> Sudah punya akun? <a href="{{ route('login') }}" class="text-primary">Login</a>
+                                </div>
+                            </form>
                         </div>
-
-                        <div class="row mb-3">
-                            <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <label for="password-confirm" class="col-md-4 col-form-label text-md-end">{{ __('Confirm Password') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password">
-                            </div>
-                        </div>
-
-                        <div class="row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Register') }}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
-@endsection
+
+    <script src="{{ asset('purple-free/dist/assets/vendors/js/vendor.bundle.base.js') }}"></script>
+    <script src="{{ asset('purple-free/dist/assets/js/off-canvas.js') }}"></script>
+    <script src="{{ asset('purple-free/dist/assets/js/misc.js') }}"></script>
+    <script src="{{ asset('purple-free/dist/assets/js/settings.js') }}"></script>
+    <script src="{{ asset('purple-free/dist/assets/js/todolist.js') }}"></script>
+    <script src="{{ asset('purple-free/dist/assets/js/jquery.cookie.js') }}"></script>
+</body>
+
+</html>

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB; // Tambahkan ini untuk menggunakan fitur DB
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -31,17 +32,35 @@ class DatabaseSeeder extends Seeder
             ],
         ]);
 
-        // 3. Memasukkan Data Users (Admin & Akun Google Kamu)
+        $this->call(VendorMenuSeeder::class);
+
+        // 3. Memasukkan Data Users (Admin & Vendor)
+        $firstVendorId = DB::table('vendor')->value('idvendor');
+
         DB::table('users')->insert([
             [
                 'id' => 1,
                 'name' => 'admin',
+                'role' => 'admin',
+                'vendor_id' => null,
                 'email' => 'admin@mail.com',
                 'google_id' => null,
                 'provider' => null,
                 'avatar' => null,
                 // Menggunakan hash password persis seperti dari database lama kamu
                 'password' => '$2y$12$sTpzJhvOSGFatRZR7mvCM.eLVf.en4HUwwfwSn8LosRuSSKBlCeOW',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'name' => 'vendor-demo',
+                'role' => 'vendor',
+                'vendor_id' => $firstVendorId,
+                'email' => 'vendor@mail.com',
+                'google_id' => null,
+                'provider' => null,
+                'avatar' => null,
+                'password' => Hash::make('password123'),
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

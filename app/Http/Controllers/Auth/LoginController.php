@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
 {
@@ -38,5 +40,22 @@ class LoginController extends Controller
         $this->middleware('auth')->only('logout');
     }
 
-    
+    protected function authenticated(Request $request, $user)
+    {
+        if ($user->role === 'vendor') {
+            return redirect()->route('vendor.menu');
+        }
+
+        return redirect()->route('dashboard');
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
+    }
 }

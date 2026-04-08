@@ -8,12 +8,20 @@ use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LabelPrintController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\VendorDashboardController;
 use App\Http\Controllers\WilayahController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
+
+Route::get('/canteen/checkout', function () {
+    return view('pages.canteen.checkout', [
+        'midtransClientKey' => (string) config('services.midtrans.client_key'),
+        'midtransIsProduction' => (bool) config('services.midtrans.is_production'),
+    ]);
+})->name('canteen.checkout');
 
 Route::get('/auth/google', [GoogleAuthController::class, 'redirect'])->name('google.login');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback']);
@@ -57,4 +65,9 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/reports', [ReportsController::class, 'index']);
     Route::get('/reports/pdf', [ReportsController::class, 'downloadPdf'])->name('reports.pdf');
+
+    Route::get('/vendor/menu', [VendorDashboardController::class, 'menuPage'])->name('vendor.menu');
+    Route::get('/vendor/orders', [VendorDashboardController::class, 'ordersPage'])->name('vendor.orders');
+    Route::post('/vendor/menu', [VendorDashboardController::class, 'storeMenu'])->name('vendor.menu.store');
+    Route::get('/vendor/orders/lunas', [VendorDashboardController::class, 'paidOrders'])->name('vendor.orders.lunas');
 });

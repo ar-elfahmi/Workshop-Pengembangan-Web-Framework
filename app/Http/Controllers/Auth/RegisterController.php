@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Vendor;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -28,7 +29,7 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = '/dashboard';
 
     /**
      * Create a new controller instance.
@@ -51,6 +52,7 @@ class RegisterController extends Controller
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'role' => ['required', 'in:admin,vendor'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
     }
@@ -63,10 +65,30 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+        $vendorId = null;
+
+        if (($data['role'] ?? null) === 'vendor') {
+            $vendor = Vendor::query()->create([
+                'nama_vendor' => 'Vendor ' . $data['name'],
+            ]);
+            $vendorId = $vendor->idvendor;
+        }
+
         return User::create([
             'name' => $data['name'],
+            'role' => $data['role'],
+            'vendor_id' => $vendorId,
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
+    }
+
+    protected function registered($request, $user)
+    {
+        if ($user->role === 'vendor') {
+            return redirect()->route('vendor.menu');
+        }
+
+        return redirect()->route('dashboard');
     }
 }

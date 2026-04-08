@@ -23,12 +23,17 @@ class HomeController extends Controller
      */
     public function index()
     {
+        if (auth()->user()?->role === 'vendor') {
+            return redirect()->route('vendor.menu');
+        }
+
         return view('pages/home');
     }
     public function buku()
     {
         return view('pages/buku');
-    }public function kategori()
+    }
+    public function kategori()
     {
         return view('pages/kategori');
     }
