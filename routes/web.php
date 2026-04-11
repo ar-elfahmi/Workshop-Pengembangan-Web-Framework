@@ -54,7 +54,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/pos/find-item', [PosController::class, 'findItem'])->name('pos.find-item');
     Route::post('/pos/checkout', [PosController::class, 'checkout'])->name('pos.checkout');
 
-    Route::get('/kategori', [KategoriController::class, 'index']);
+    Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori.index');
     Route::post('/kategori', [KategoriController::class, 'store']);
 
     Route::get('/buku', [BukuController::class, 'index'])->name('buku');
@@ -63,11 +63,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/buku/labels', [LabelPrintController::class, 'index'])->name('buku.labels.index');
     Route::post('/buku/labels/pdf', [LabelPrintController::class, 'generatePdf'])->name('buku.labels.pdf');
 
-    Route::get('/reports', [ReportsController::class, 'index']);
+    Route::get('/reports', [ReportsController::class, 'index'])->name('reports.index');
     Route::get('/reports/pdf', [ReportsController::class, 'downloadPdf'])->name('reports.pdf');
 
     Route::get('/vendor/menu', [VendorDashboardController::class, 'menuPage'])->name('vendor.menu');
     Route::get('/vendor/orders', [VendorDashboardController::class, 'ordersPage'])->name('vendor.orders');
     Route::post('/vendor/menu', [VendorDashboardController::class, 'storeMenu'])->name('vendor.menu.store');
     Route::get('/vendor/orders/lunas', [VendorDashboardController::class, 'paidOrders'])->name('vendor.orders.lunas');
+
+    // Barang Pages
+    Route::get('/barang', function () {
+        return view('barang.index');
+    })->name('barang.index');
+    Route::get('/barang/datatables', function () {
+        return view('barang.datatables');
+    })->name('barang.datatables');
+    Route::get('/barang/select', function () {
+        return view('barang.select');
+    })->name('barang.select');
 });

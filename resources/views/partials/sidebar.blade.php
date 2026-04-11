@@ -37,13 +37,13 @@
 
     @if ($role !== 'vendor')
     <li class="nav-item">
-      <a class="nav-link" href="dashboard">
+      <a class="nav-link" href="{{ route('dashboard') }}">
         <span class="menu-title">Dashboard</span>
         <i class="mdi mdi-home menu-icon"></i>
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="kategori">
+      <a class="nav-link" href="{{ route('kategori.index') }}">
         <span class="menu-title">Kategori</span>
         <i class="mdi mdi-format-list-bulleted menu-icon"></i>
       </a>
@@ -61,7 +61,7 @@
       </a>
     </li> -->
     <li class="nav-item">
-      <a class="nav-link" href="reports">
+      <a class="nav-link" href="{{ route('reports.index') }}">
         <span class="menu-title">Reports</span>
         <i class="mdi mdi-file-chart menu-icon"></i>
       </a>
@@ -90,112 +90,71 @@
         <i class="mdi mdi-cash menu-icon"></i>
       </a>
     </li>
-    @endif
-    <!-- </li>
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#ui-basic" aria-expanded="false" aria-controls="ui-basic">
-                <span class="menu-title">Basic UI Elements</span>
-                <i class="menu-arrow"></i>
-                <i class="mdi mdi-crosshairs-gps menu-icon"></i>
-              </a>
-              <div class="collapse" id="ui-basic">
-                <ul class="nav flex-column sub-menu">
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ asset('purple-free/dist/pages/ui-features/buttons.html')}}">Buttons</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ asset('purple-free/dist/pages/ui-features/dropdowns.html')}}">Dropdowns</a>
-                  </li>
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ asset('purple-free/dist/pages/ui-features/typography.html')}}">Typography</a>
-                  </li>
-                </ul>
-              </div>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#icons" aria-expanded="false" aria-controls="icons">
-                <span class="menu-title">Icons</span>
-                <i class="mdi mdi-contacts menu-icon"></i>
-              </a>
-              <div class="collapse" id="icons">
-                <ul class="nav flex-column sub-menu">
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ asset('purple-free/dist/pages/icons/font-awesome.html')}}">Font Awesome</a>
-                  </li>
-                </ul>
-              </div>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#forms" aria-expanded="false" aria-controls="forms">
-                <span class="menu-title">Forms</span>
-                <i class="mdi mdi-format-list-bulleted menu-icon"></i>
-              </a>
-              <div class="collapse" id="forms">
-                <ul class="nav flex-column sub-menu">
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ asset('purple-free/dist/pages/forms/basic_elements.html')}}">Form Elements</a>
-                  </li>
-                </ul>
-              </div>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#charts" aria-expanded="false" aria-controls="charts">
-                <span class="menu-title">Charts</span>
-                <i class="mdi mdi-chart-bar menu-icon"></i>
-              </a>
-              <div class="collapse" id="charts">
-                <ul class="nav flex-column sub-menu">
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ asset('purple-free/dist/pages/charts/chartjs.html')}}">ChartJs</a>
-                  </li>
-                </ul>
-              </div>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" data-bs-toggle="collapse" href="#tables" aria-expanded="false" aria-controls="tables">
-                <span class="menu-title">Tables</span>
-                <i class="mdi mdi-table-large menu-icon"></i>
-              </a>
-              <div class="collapse" id="tables">
-                <ul class="nav flex-column sub-menu">
-                  <li class="nav-item">
-                    <a class="nav-link" href="{{ asset('purple-free/dist/pages/tables/basic-table.html')}}">Basic table</a>
-                  </li>
-                </ul>
-              </div>
-            </li> -->
     <li class="nav-item">
-      <a class="nav-link" data-bs-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
-        <span class="menu-title">User Pages</span>
+      <a class="nav-link" data-bs-toggle="collapse" href="#barang-menu" aria-expanded="false" aria-controls="barang-menu">
+        <span class="menu-title">Barang</span>
         <i class="menu-arrow"></i>
-        <i class="mdi mdi-lock menu-icon"></i>
+        <i class="mdi mdi-inbox-multiple menu-icon"></i>
       </a>
-      <div class="collapse" id="auth">
+      <div class="collapse" id="barang-menu">
         <ul class="nav flex-column sub-menu">
           <li class="nav-item">
-            <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/blank-page.html')}}"> Blank Page </a>
+            <a class="nav-link" href="{{ route('barang.index') }}">Basic Table</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/login.html')}}"> Login </a>
+            <a class="nav-link" href="{{ route('barang.datatables') }}">DataTables</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/register.html')}}"> Register </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/error-404.html')}}"> 404 </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ asset('purple-free/dist/pages/samples/error-500.html')}}"> 500 </a>
+            <a class="nav-link" href="{{ route('barang.select') }}">Select & Select2</a>
           </li>
         </ul>
       </div>
     </li>
-    <li class="nav-item">
-      <a class="nav-link" href="{{ asset('purple-free/dist/docs/documentation.html')}}" target="_blank">
-        <span class="menu-title">Documentation</span>
-        <i class="mdi mdi-file-document-box menu-icon"></i>
-      </a>
-    </li>
+    @endif
   </ul>
 </nav>
 <!-- partial -->
+
+
+<script>
+  $(document).ready(function() {
+    const currentPath = window.location.pathname;
+
+    // Set active class on nav links based on current path
+    $('.nav-link').each(function() {
+      const href = $(this).attr('href');
+
+      // Skip placeholder links
+      if (!href || href === '#') {
+        return;
+      }
+
+      // Support both relative links and absolute URLs from route()
+      let linkPath = href;
+      if (href.startsWith('http')) {
+        linkPath = new URL(href, window.location.origin).pathname;
+      }
+
+      // Check if current path matches this link (remove trailing slashes for comparison)
+      linkPath = linkPath.replace(/\/$/, '');
+      const pathToCheck = currentPath.replace(/\/$/, '');
+
+      if (pathToCheck.includes(linkPath) || linkPath.includes(pathToCheck.split('/').pop())) {
+        $(this).addClass('active');
+
+        // If this is a sub-menu item, also mark parent as active and expand it
+        const parentCollapse = $(this).closest('.collapse');
+        if (parentCollapse.length) {
+          const collapseId = parentCollapse.attr('id');
+          const parentLink = $('a[href="#' + collapseId + '"]');
+
+          if (parentLink.length) {
+            parentLink.addClass('active');
+            parentLink.attr('aria-expanded', 'true');
+            parentCollapse.addClass('show');
+          }
+        }
+      }
+    });
+  });
+</script>
